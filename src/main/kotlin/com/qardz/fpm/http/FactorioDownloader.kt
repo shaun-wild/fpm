@@ -21,18 +21,23 @@ class FactorioDownloader {
         fun downloadFactorio(version: Version) {
             val auth = FactorioHTTP.authenticate()
             val url = getDownloadURL(version)
-            println("Downloading factorio version $version...")
+            println("Downloading factorio version $version from $url")
 
             val response = Unirest.get(url)
                 .queryString("username", auth.username)
                 .queryString("token", auth.token)
+                .asEmpty()
+
+            val downloadUrl = response.headers["Location"][0]
+
+            val download = Unirest.get(downloadUrl)
                 .downloadMonitor { field, fileName, bytesWritten, totalBytes -> println("Downloading ($bytesWritten/$totalBytes)") }
                 .asFile(FileManager.getHomePath().resolve("$version/factorio-$version.zip").toAbsolutePath().toString())
 
-            if(response.isSuccess) {
+            if(download.isSuccess) {
                 println("Download complete")
             } else {
-                throw FPMException("Download failed: ${response.statusText}")
+                throw FPMException("Download failed: ${response.statusText} (${response.status})")
             }
         }
 

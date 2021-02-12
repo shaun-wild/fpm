@@ -14,7 +14,7 @@ class InfoSerialization {
         Version(15, 99, 203),
         "My Mod",
         "Shaun",
-        "1.1",
+        factorioVersion = "1.1",
         dependencies = listOf(
             Dependency(
                 Prefix.INCOMPATIBLE,

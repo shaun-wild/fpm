@@ -14,6 +14,6 @@ class Start: Task {
 
         val releases = FactorioDownloader.getLatestReleases()
 
-        FactorioDownloader.downloadFactorio(releases.stable.alpha)
+        FactorioDownloader.downloadFactorio(releases.experimental.alpha)
     }
 }
