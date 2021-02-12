@@ -8,8 +8,12 @@ import com.qardz.fpm.http.Build.ALPHA
 import com.qardz.fpm.http.Distro.*
 import com.qardz.fpm.io.FileManager
 import kong.unirest.Unirest
+import net.lingala.zip4j.ZipFile
 import org.apache.commons.lang3.SystemUtils.*
+import java.io.File
 import java.net.URL
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.text.MessageFormat.format
 
 class FactorioDownloader {
@@ -18,28 +22,45 @@ class FactorioDownloader {
         val RELEASES_URL = URL("https://factorio.com/api/latest-releases")
         const val BASE_URL_TEMPLATE = "https://factorio.com/get-download/{0}/{1}/{2}"
 
-        fun downloadFactorio(version: Version) {
+        fun downloadFactorio(version: Version): Path {
+            val localGame = getLocalGame(version)
+
+            if (localGame.toFile().exists()) {
+                println("Game already downloaded.")
+                return localGame
+            }
+
             val auth = FactorioHTTP.authenticate()
             val url = getDownloadURL(version)
             println("Downloading factorio version $version from $url")
 
+            val tempFile = File.createTempFile("factorio", "$version.zip")
+            tempFile.deleteOnExit()
+
             val response = Unirest.get(url)
                 .queryString("username", auth.username)
                 .queryString("token", auth.token)
-                .asEmpty()
+                .asFile(tempFile.absolutePath, StandardCopyOption.REPLACE_EXISTING)
 
-            val downloadUrl = response.headers["Location"][0]
-
-            val download = Unirest.get(downloadUrl)
-                .downloadMonitor { field, fileName, bytesWritten, totalBytes -> println("Downloading ($bytesWritten/$totalBytes)") }
-                .asFile(FileManager.getHomePath().resolve("$version/factorio-$version.zip").toAbsolutePath().toString())
-
-            if(download.isSuccess) {
-                println("Download complete")
+            if (response.isSuccess) {
+                println("Download complete.")
             } else {
-                throw FPMException("Download failed: ${response.statusText} (${response.status})")
+                val error =
+                    response.parsingError.map { it.message }.orElse("${response.statusText} (${response.status})")
+                throw FPMException("Download failed: $error")
             }
+
+            println("Unzipping Factorio $version")
+            val downloadDirectory = FileManager.getHomePath().resolve("downloads/game")
+            downloadDirectory.toFile().mkdirs()
+            ZipFile(tempFile).extractAll(downloadDirectory.toString())
+            println("Done!")
+
+            return getLocalGame(version)
         }
+
+        fun getLocalGame(version: Version) =
+            FileManager.getHomePath().resolve("downloads/game/Factorio_$version")
 
         fun getLatestReleases() = FactorioHTTP.client.readValue<Releases>(RELEASES_URL)
 
