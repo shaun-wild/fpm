@@ -35,7 +35,7 @@ class Add : Task {
 
         println("Downloading mod: ${factorioMod.title}...")
 
-        val download = FactorioModPortal.downloadMod(factorioMod)
+        val download = FactorioModPortal.downloadMod(factorioMod.name)
 
         println("Downloaded mod")
 

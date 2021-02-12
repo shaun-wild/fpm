@@ -17,7 +17,9 @@ class FactorioModPortal {
         private const val FACTORIO_ENDPOINT = "https://mods.factorio.com"
         private const val MODS_PATH = "api/mods"
 
-        fun downloadMod(mod: Mod, version: Version? = null): LocalMod {
+        fun downloadMod(name: String, version: Version? = null): LocalMod {
+            val mod = getMod(name)  ?: throw FPMException("Could not find $name")
+
             val download = if (version != null) {
                 mod.releases.find { it.version == version } ?: throw FPMException("Could not find $mod ($version)")
             } else {
