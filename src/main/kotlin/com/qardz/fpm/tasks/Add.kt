@@ -1,8 +1,9 @@
 package com.qardz.fpm.tasks
 
 import com.qardz.fpm.data.local.Dependency
+import com.qardz.fpm.data.local.DependencyVersion
+import com.qardz.fpm.data.local.Equality
 import com.qardz.fpm.data.local.Info
-import com.qardz.fpm.data.local.Prefix
 import com.qardz.fpm.exception.FPMException
 import com.qardz.fpm.http.FactorioModPortal
 import com.qardz.fpm.io.FileManager
@@ -25,14 +26,25 @@ class Add : Task {
     private fun addDependency(name: String, info: Info): Info {
         val newDependencies = info.dependencies?.toMutableList() ?: mutableListOf()
 
-        if(info.getDependency(name) != null) {
+        if (info.getDependency(name) != null) {
             throw FPMException("Dependency already added.")
         }
 
         val factorioMod = FactorioModPortal.getMod(name)
             ?: throw FPMException("Mod not found on mod portal: $name.")
 
-        newDependencies.add(Dependency(internalModName = name, prefix = Prefix.HIDDEN_OPTIONAL))
+        println("Downloading mod: ${factorioMod.title}...")
+
+        val download = FactorioModPortal.downloadMod(factorioMod)
+
+        println("Downloaded mod")
+
+        newDependencies.add(
+            Dependency(
+                dependencyVersion = DependencyVersion(Equality.EQUAL, download.version),
+                internalModName = name
+            )
+        )
         println("Added mod ${factorioMod.title} - ${factorioMod.summary}")
         return info.copy(dependencies = newDependencies)
     }

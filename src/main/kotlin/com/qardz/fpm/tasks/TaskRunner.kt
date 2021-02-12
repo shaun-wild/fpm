@@ -13,7 +13,7 @@ class TaskRunner {
     )
 
     fun runTask(task: String?, cmd: CommandLine) {
-        if (task == null || task.length == 0) {
+        if (task == null || task.isBlank()) {
             throw FPMException("Must specify task to execute.")
         }
 

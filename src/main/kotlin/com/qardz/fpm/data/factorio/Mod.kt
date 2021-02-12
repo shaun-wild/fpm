@@ -14,7 +14,9 @@ data class Mod(
     val summary: String,
     val thumbnail: String,
     val title: String,
-)
+) {
+    override fun toString()= name
+}
 
 data class ModRelease(
     val downloadUrl: String,
