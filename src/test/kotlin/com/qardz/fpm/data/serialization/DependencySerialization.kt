@@ -1,9 +1,6 @@
 package com.qardz.fpm.data.serialization
 
-import com.qardz.fpm.data.local.DependencyVersion
-import com.qardz.fpm.data.local.Equality
-import com.qardz.fpm.data.local.Prefix
-import com.qardz.fpm.data.local.Version
+import com.qardz.fpm.data.local.*
 import com.qardz.fpm.exception.FPMException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,7 +12,7 @@ class DependencySerialization {
     @Test
     fun `just mod name deserialize`() {
         val text = "mod-name"
-        val dependency = DependencyDeserializer.deserialize(text)
+        val dependency = Dependency.parse(text)
 
         assertNull(dependency.prefix)
         assertEquals(text, dependency.internalModName)
@@ -25,7 +22,7 @@ class DependencySerialization {
     @Test
     fun `mod name and prefix deserialize`() {
         val text = "(?) mod-name"
-        val dependency = DependencyDeserializer.deserialize(text)
+        val dependency = Dependency.parse(text)
 
         assertEquals(Prefix.HIDDEN_OPTIONAL, dependency.prefix)
         assertEquals("mod-name", dependency.internalModName)
@@ -35,7 +32,7 @@ class DependencySerialization {
     @Test
     fun `mod name, prefix and version deserialize`() {
         val text = "! mod-name >= 1.1.2"
-        val dependency = DependencyDeserializer.deserialize(text)
+        val dependency = Dependency.parse(text)
 
         assertEquals(Prefix.INCOMPATIBLE, dependency.prefix)
         assertEquals("mod-name", dependency.internalModName)
@@ -45,7 +42,7 @@ class DependencySerialization {
     @Test
     fun `mod name, prefix and version deserialize 2`() {
         val text = "(?) mod-name = 2.25"
-        val dependency = DependencyDeserializer.deserialize(text)
+        val dependency = Dependency.parse(text)
 
         assertEquals(Prefix.HIDDEN_OPTIONAL, dependency.prefix)
         assertEquals("mod-name", dependency.internalModName)
@@ -55,7 +52,7 @@ class DependencySerialization {
     @Test
     fun `mod name and version deserialize`() {
         val text = "mod-name < 1.0"
-        val dependency = DependencyDeserializer.deserialize(text)
+        val dependency = Dependency.parse(text)
 
         assertNull(dependency.prefix)
         assertEquals("mod-name", dependency.internalModName)
@@ -65,12 +62,12 @@ class DependencySerialization {
     @Test
     fun `bad version fails`() {
         val text = "mod-name < test"
-        assertThrows<FPMException> { DependencyDeserializer.deserialize(text) }
+        assertThrows<FPMException> { Dependency.parse(text) }
     }
 
     @Test
     fun `bad version fails 2`() {
         val text = "mod-name < 23.2.2.2"
-        assertThrows<FPMException> { DependencyDeserializer.deserialize(text) }
+        assertThrows<FPMException> { Dependency.parse(text) }
     }
 }
