@@ -9,7 +9,8 @@ class TaskRunner {
         "init" to Init(),
         "add" to Add(),
         "start" to Start(),
-        "login" to Login()
+        "login" to Login(),
+        "package" to Package()
     )
 
     fun runTask(task: String?, cmd: CommandLine) {

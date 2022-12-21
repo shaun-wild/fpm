@@ -11,7 +11,7 @@ fun assertInfoExists(path: Path) {
 }
 
 fun assertInfoNotExists(path: Path) {
-    if(FileManager.infoExists(path)) {
+    if (FileManager.infoExists(path)) {
         throw FPMException("A mod-info.json file already exists!")
     }
 }
