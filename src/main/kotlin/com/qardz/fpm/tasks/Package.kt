@@ -21,6 +21,13 @@ class Package : Task {
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 
+    /**
+     * Zips up the enabled mod files in the Factorio home mod directory and stores the zip file in the working directory.
+     *
+     * @param workingDir the working directory to store the zip file in
+     * @param cmd the command line arguments
+     * @throws FPMException if a mod file is missing for an enabled mod
+     */
     override fun execute(workingDir: Path, cmd: CommandLine) {
         val factorioHomeMods = getFactorioHome()
             .resolve(MODS)
@@ -32,8 +39,10 @@ class Package : Task {
 
         val enabledModFiles = modList.mods
             .filter { it.name != "base" && it.enabled }
-            .map { mod -> modFiles.find { it.name.contains(mod.name) }
-                ?: throw FPMException("Missing mod file for ${mod.name}") }
+            .map { mod ->
+                modFiles.find { it.name.contains(mod.name) }
+                    ?: throw FPMException("Missing mod file for ${mod.name}")
+            }
             .map(Path::toFile)
 
         val outputFile = workingDir
@@ -59,9 +68,11 @@ class Package : Task {
 
             files.forEach { file ->
                 zipOut.putNextEntry(ZipEntry(file.name))
+
                 file.inputStream().use { input ->
                     input.copyTo(zipOut)
                 }
+
                 zipOut.closeEntry()
             }
         }
